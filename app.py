@@ -23,14 +23,14 @@ uploaded_file = st.sidebar.file_uploader(
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
 
-    # Initialize Gemini 2.5 Flash and text-embedding-004
+    # Initialize Gemini 2.5 Flash and embedding-001 with explicit google_api_key
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        api_key=api_key
+        google_api_key=api_key
     )
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="text-embedding-004",
-        api_key=api_key
+        model="models/embedding-001",
+        google_api_key=api_key
     )
 
     # Tool A: DuckDuckGo Web Search
