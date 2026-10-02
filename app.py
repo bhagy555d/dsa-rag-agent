@@ -6,7 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.tools.retriever import create_retriever_tool
+from langchain_core.tools import create_retriever_tool
 from langchain.agents import initialize_agent, AgentType
 
 st.title("AI Assistant: DSA, Web Search & File Q&A")
