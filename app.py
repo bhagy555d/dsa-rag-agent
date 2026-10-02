@@ -19,8 +19,15 @@ uploaded_file = st.sidebar.file_uploader("Upload a Text File (.txt)", type=["txt
 
 # 2. Initialize LLM & Agent Tools
 if api_key:
-    # Use Gemini 1.5 Pro for complex reasoning and DSA logic
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0)
+    # Use Gemini for complex reasoning and DSA logic
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-pro", 
+        google_api_key=api_key
+    ) 
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/embedding-001", 
+        google_api_key=api_key
+    )
     
     # Tool A: Web Search
     search_tool = DuckDuckGoSearchRun()
