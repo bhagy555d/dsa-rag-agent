@@ -24,9 +24,9 @@ uploaded_file = st.sidebar.file_uploader(
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
 
-    # Initialize the stable 2.5 Flash model
+    # Initialize the stable 3.8 Flash model
     llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
+    model="gemini-3.8-flash",
     api_key=api_key
 )
     # Use local HuggingFace embeddings to completely bypass Google rate limits
