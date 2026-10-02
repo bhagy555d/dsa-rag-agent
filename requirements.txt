@@ -4,5 +4,5 @@ langchain-google-genai
 langchain-community
 langchain-text-splitters
 faiss-cpu
-duckduckgo-search==5.3.1
+ddgs
 langchain-classic
