@@ -26,9 +26,9 @@ if api_key:
 
     # Initialize the stable 1.5 Flash model
     llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash",
-        api_key=api_key
-    )
+    model="models/gemini-1.5-flash",
+    api_key=api_key
+)
     # Use local HuggingFace embeddings to completely bypass Google rate limits
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2"
