@@ -12,14 +12,15 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 st.title("AI Assistant: DSA, Web Search & File Q&A")
 
 # 1. Sidebar Setup
-api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
-uploaded_file = st.file_uploader(
-    "Upload a document", 
-    type=["txt", "pdf", "csv"]
-)
+import time
 
-# 2. Main Logic
+# 1. Sidebar Setup
+api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
+
 if api_key:
+    # Restore the environment variable so LangChain tools never lose the key
+    os.environ["GOOGLE_API_KEY"] = api_key
+    
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         api_key=api_key
@@ -28,6 +29,8 @@ if api_key:
         model="models/text-embedding-004",
         api_key=api_key
     )
+
+
 
     # Tool A: Web Search
     search_tool = DuckDuckGoSearchRun()
@@ -91,6 +94,7 @@ if api_key:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         with st.spinner("Processing..."):
+            time.sleep(2) # Buffer to prevent 429 Rate Limit crashes on the free tier
             response = agent.run(user_input)
 
         st.chat_message("assistant").write(response)
