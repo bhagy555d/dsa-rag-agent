@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 import streamlit as st
 from langchain_classic.agents import AgentType, initialize_agent
 from langchain_community.document_loaders import CSVLoader, PyPDFLoader, TextLoader
@@ -11,16 +12,17 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 st.title("AI Assistant: DSA, Web Search & File Q&A")
 
-# 1. Sidebar Setup
-import time
-
-# 1. Sidebar Setup
+# --- Step 1: Sidebar & File Upload Inputs (Define variables first) ---
 api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
+uploaded_file = st.file_uploader(
+    "Upload a document", 
+    type=["txt", "pdf", "csv"]
+)
 
+# --- Step 2: Main Logic ---
 if api_key:
-    # Restore the environment variable so LangChain tools never lose the key
     os.environ["GOOGLE_API_KEY"] = api_key
-    
+
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         api_key=api_key
@@ -30,25 +32,20 @@ if api_key:
         api_key=api_key
     )
 
-
-
-    # Tool A: Web Search
     search_tool = DuckDuckGoSearchRun()
     search_tool.name = "Web_Search"
     search_tool.description = "Search the internet for external website information or current events."
     tools = [search_tool]
 
-    # Tool B: Document Search with Session Caching
+    # Now uploaded_file is guaranteed to exist
     if uploaded_file is not None:
         file_ext = os.path.splitext(uploaded_file.name)[1].lower()
 
-        # Cache vector store so it doesn't re-index on every single user prompt
         if "vector_db" not in st.session_state or st.session_state.get("last_uploaded") != uploaded_file.name:
             with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tf:
                 tf.write(uploaded_file.getbuffer())
                 temp_path = tf.name
 
-            # Route by document format
             if file_ext == ".pdf":
                 loader = PyPDFLoader(temp_path)
             elif file_ext == ".csv":
@@ -71,34 +68,3 @@ if api_key:
             "Use this tool to search for specific content inside the uploaded document."
         )
         tools.append(doc_tool)
-
-    # Agent Initialization
-    agent = initialize_agent(
-        tools=tools,
-        llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
-        handle_parsing_errors=True
-    )
-
-    # Chat Interface
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
-
-    user_input = st.chat_input("Ask a DSA question, search the web, or query your file...")
-    if user_input:
-        st.chat_message("user").write(user_input)
-        st.session_state.messages.append({"role": "user", "content": user_input})
-
-        with st.spinner("Processing..."):
-            time.sleep(2) # Buffer to prevent 429 Rate Limit crashes on the free tier
-            response = agent.run(user_input)
-
-        st.chat_message("assistant").write(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-else:
-    st.warning("Please enter your Gemini API Key in the sidebar to start.")
