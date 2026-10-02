@@ -1,4 +1,5 @@
 import os
+from langchain_huggingface import HuggingFaceEmbeddings
 import tempfile
 import time
 import streamlit as st
@@ -23,16 +24,16 @@ uploaded_file = st.sidebar.file_uploader(
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
 
-    # Initialize Gemini 2.5 Flash and embedding-001 with explicit google_api_key
+    # Initialize Gemini 2.5 Flash as the brain
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        google_api_key=api_key
+        api_key=api_key
     )
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=api_key
+    
+    # Use local HuggingFace embeddings to completely bypass Google rate limits
+    embeddings = HuggingFaceEmbeddings(
+        model_name="all-MiniLM-L6-v2"
     )
-
     # Tool A: DuckDuckGo Web Search
     search_tool = DuckDuckGoSearchRun()
     search_tool.name = "Web_Search"

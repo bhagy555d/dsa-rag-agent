@@ -7,3 +7,5 @@ faiss-cpu
 ddgs
 langchain-classic
 pypdf
+langchain-huggingface
+sentence-transformers
