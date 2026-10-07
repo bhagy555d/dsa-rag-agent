@@ -3,7 +3,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import tempfile
 import time
 import streamlit as st
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.document_loaders import CSVLoader, PyPDFLoader, TextLoader
 from langchain_community.tools import DuckDuckGoSearchRun
