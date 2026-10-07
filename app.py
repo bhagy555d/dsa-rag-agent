@@ -3,7 +3,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import tempfile
 import time
 import streamlit as st
-from langchain_classic.agents import AgentType, initialize_agent
+from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.document_loaders import CSVLoader, PyPDFLoader, TextLoader
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.vectorstores import FAISS
@@ -85,14 +86,17 @@ if api_key:
             )
             tools.append(doc_tool)
 
-    # Initialize the zero-shot ReAct agent
-    agent = initialize_agent(
-        tools=tools,
-        llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
-        handle_parsing_errors=True
-    )
+    # Define the system prompt for native tool calling
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a helpful AI assistant. Use the provided tools to search the web or read the uploaded document to answer queries."),
+        ("placeholder", "{chat_history}"),
+        ("human", "{input}"),
+        ("placeholder", "{agent_scratchpad}"),
+    ])
+
+    # Initialize the modern tool-calling agent
+    agent = create_tool_calling_agent(llm, tools, prompt)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
     # --- Step 3: Chat History Management ---
     if "messages" not in st.session_state:
@@ -101,16 +105,21 @@ if api_key:
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # --- Step 4: User Query Execution ---
+   # --- Step 4: User Query Execution ---
     user_input = st.chat_input("Ask a DSA question, search the web, or query your uploaded document...")
+    
     if user_input:
+        # Display the user's prompt on the UI and save to history
         st.chat_message("user").write(user_input)
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         with st.spinner("Thinking and routing query..."):
-            time.sleep(1)  # Buffer against API rate spikes
-            response = agent.run(user_input)
+            time.sleep(1)
+            # Use invoke() and extract the "output" key
+            result = agent_executor.invoke({"input": user_input})
+            response = result["output"]
 
+        # Display the assistant's response on the UI and save to history
         st.chat_message("assistant").write(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
