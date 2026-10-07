@@ -9,3 +9,4 @@ duckduckgo-search
 pypdf
 langchain-huggingface
 sentence-transformers
+protobuf>=5.27.0
